@@ -135,6 +135,7 @@
         input[type="time"],
         input[type="url"],
         input[type="email"],
+        input[type="file"], /* Added style for file input */
         textarea {
             width: 100%;
             padding: 12px 15px;
@@ -147,12 +148,19 @@
             -moz-appearance: none;
             appearance: none;
         }
+        
+        input[type="file"] {
+            padding-top: 10px; /* Adjust padding for file input */
+            padding-bottom: 10px;
+        }
+
 
         input[type="text"]:focus,
         input[type="date"]:focus,
         input[type="time"]:focus,
         input[type="url"]:focus,
         input[type="email"]:focus,
+        input[type="file"]:focus, /* Added focus style for file input */
         textarea:focus {
             border-color: #8a2be2; /* Violet focus */
             box-shadow: 0 0 0 0.2rem rgba(138, 43, 226, 0.25);
@@ -177,10 +185,13 @@
         }
 
         /* Validation feedback */
-        .form-group.is-invalid input:not([type="checkbox"]),
-        .form-group.is-invalid textarea {
+        .form-group.is-invalid input:not([type="checkbox"]):not([type="radio"]), /* Exclude radio */
+        .form-group.is-invalid textarea,
+        .form-group.is-invalid .photo-option-section input[type="file"],
+        .form-group.is-invalid .photo-option-section input[type="url"] { /* Specific validation for photo inputs */
             border-color: #f56c6c;
         }
+
 
         .form-group.is-invalid .error-message {
             color: #f56c6c;
@@ -325,6 +336,15 @@
         .support-message strong {
             color: #2e3b4e;
         }
+
+        /* Info icon for tooltip */
+        .info-icon {
+            cursor: help;
+            margin-left: 5px;
+            font-size: 0.9em;
+            color: #8a2be2;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -374,42 +394,42 @@
             <form id="eventSubmissionForm" novalidate>
                 <div class="form-group">
                     <label for="eventName">Nom de l'événement <span class="required">*</span></label>
-                    <input type="text" id="eventName" name="NomEvenement" required placeholder="Exemples : 'Drag Kings en feu', 'Apéro Littéraire Lesbien', 'Cercle de parole Trans'">
+                    <input type="text" id="eventName" name="eventName" required placeholder="Exemples : 'Drag Kings en feu', 'Apéro Littéraire Lesbien', 'Cercle de parole Trans'">
                     <small>Pas besoin de tout expliquer ici, tu pourras le faire dans la description.</small>
                 </div>
 
                 <div class="form-group">
                     <label for="eventStartDate">Date de l'événement <span class="required">*</span></label>
-                    <input type="date" id="eventStartDate" name="DateDebut" required>
+                    <input type="date" id="eventStartDate" name="eventStartDate" required>
                 </div>
 
                 <div class="form-group">
                     <label for="eventEndDate">Date de fin de l'événement : <small>(Que si l'événement dure plusieurs jours !)</small></label>
-                    <input type="date" id="eventEndDate" name="DateFin">
+                    <input type="date" id="eventEndDate" name="eventEndDate">
                 </div>
 
                 <div class="form-group">
                     <label for="eventStartTime">Heure de début</label>
-                    <input type="time" id="eventStartTime" name="HeureDebut">
+                    <input type="time" id="eventStartTime" name="eventStartTime">
                 </div>
 
                 <div class="form-group">
                     <label for="eventEndTime">Heure de fin</label>
-                    <input type="time" id="eventEndTime" name="HeureFin">
+                    <input type="time" id="eventEndTime" name="eventEndTime">
                 </div>
 
                 <div class="form-group autocomplete-container">
                     <label for="eventAddressAutocomplete">Adresse de l'événement <span class="required">*</span></label>
                     <small>Commencez à taper une adresse française pour l'autocomplétion.</small>
-                    <input type="text" id="eventAddressAutocomplete" name="AdresseAutocomplete" placeholder="Rechercher une adresse..." required>
+                    <input type="text" id="eventAddressAutocomplete" name="eventAddressAutocomplete" placeholder="Rechercher une adresse..." required>
                     <div id="autocomplete-results" class="autocomplete-items"></div>
-                    <input type="hidden" id="eventAddress" name="Adresse">
-                    <input type="hidden" id="eventCity" name="Ville">
+                    <input type="hidden" id="eventAddress" name="eventAddress">
+                    <input type="hidden" id="eventCity" name="eventCity">
                 </div>
 
                 <div class="form-group">
                     <label for="eventLocationName">Lieu (Nom de l'endroit)</label>
-                    <input type="text" id="eventLocationName" name="DonneesEvenementsLieu" placeholder="Nom de la salle, du bar, etc.">
+                    <input type="text" id="eventLocationName" name="eventLocationName" placeholder="Nom de la salle, du bar, etc.">
                 </div>
 
                 <div class="form-group">
@@ -523,44 +543,61 @@
 
                 <div class="form-group">
                     <label for="eventDescription">Description de l'événement <span class="required">*</span></label>
-                    <textarea id="eventDescription" name="Description" rows="6" required placeholder="Raconte ici ce qu'il va se passer."></textarea>
+                    <textarea id="eventDescription" name="eventDescription" rows="6" required placeholder="Raconte ici ce qu'il va se passer."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="eventPhotoUrl">Visuel de l'événement :</label>
-                    <small>Copiez/Collez ici l'URL d'une image. Uploader une image vous donnera une belle visibilité !</small>
-                    <input type="url" id="eventPhotoUrl" name="PhotoUrl" placeholder="Ex: https://votresite.com/image.jpg">
-                </div>
+                    <label>Visuel de l'événement :</label>
+                    <small>Uploader une image vous donnera une belle visibilité !</small>
 
+                    <div style="margin-top: 10px; margin-bottom: 15px;">
+                        <input type="radio" id="optionUpload" name="photoOption" value="upload" checked>
+                        <label for="optionUpload" style="display: inline; margin-bottom: 0;">Uploader une image</label>
+                    </div>
+
+                    <div id="uploadSection" class="photo-option-section">
+                        <input type="file" id="eventPhotoFile" name="eventPhotoFile" accept="image/*">
+                    </div>
+
+                    <div style="margin-top: 15px; margin-bottom: 10px;">
+                        <input type="radio" id="optionUrl" name="photoOption" value="url">
+                        <label for="optionUrl" style="display: inline; margin-bottom: 0;">Ou coller l'URL d'une image existante</label>
+                        <span class="info-icon" title="Pour obtenir l'URL d'une image : Sur PC, faites un clic droit sur l'image et sélectionnez 'Copier l'adresse de l'image' (ou 'Copier le lien de l'image'). Sur mobile, appuyez longuement sur l'image et choisissez une option similaire.">ⓘ</span>
+                    </div>
+
+                    <div id="urlSection" class="photo-option-section" style="display: none;">
+                        <input type="url" id="eventPhotoUrlText" name="eventPhotoUrlText" placeholder="Ex: https://votresite.com/image.jpg">
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>Liens vers l'événement :</label>
                     <small>Un lien de réservation ou vers un post Instagram est fortement recommandé. Sinon, un autre lien d'accès à l'événement peut être fourni pour améliorer la visibilité.</small>
-                    <input type="url" id="instagramLink" name="LienInstagram" placeholder="Lien vers le post Instagram">
-                    <input type="url" id="facebookLink" name="LienFacebook" placeholder="Lien vers l'event Facebook">
-                    <input type="url" id="shotgunLink" name="LienShotgun" placeholder="Lien vers la réservation Shotgun">
-                    <input type="url" id="diceLink" name="LienDice" placeholder="Lien vers la réservation Dice">
-                    <input type="url" id="otherReservationLink" name="LienAutreReservation" placeholder="Lien vers un autre système de réservation">
-                    <input type="url" id="eventPageLink" name="SiteURL" placeholder="Lien Principal de l'événement (Site web, billetterie, ou autre page officielle)">
+                    <input type="url" id="instagramLink" name="instagramLink" placeholder="Lien vers le post Instagram">
+                    <input type="url" id="facebookLink" name="facebookLink" placeholder="Lien vers l'event Facebook">
+                    <input type="url" id="shotgunLink" name="shotgunLink" placeholder="Lien vers la réservation Shotgun">
+                    <input type="url" id="diceLink" name="diceLink" placeholder="Lien vers la réservation Dice">
+                    <input type="url" id="otherReservationLink" name="otherReservationLink" placeholder="Lien vers un autre système de réservation">
+                    <input type="url" id="eventPageLink" name="eventPageLink" placeholder="Lien Principal de l'événement (Site web, billetterie, ou autre page officielle)">
                 </div>
 
                 <div class="form-group">
                     <label for="eventOrganizer">Organisateur</label>
-                    <input type="text" id="eventOrganizer" name="Organisateur">
+                    <input type="text" id="eventOrganizer" name="eventOrganizer">
                 </div>
 
                 <div class="form-group">
                     <label for="eventAdditionalInfo">Autres notes :</label>
-                    <textarea id="eventAdditionalInfo" name="InfoAdd" rows="3" placeholder="Informations supplémentaires, remarques..."></textarea>
+                    <textarea id="eventAdditionalInfo" name="eventAdditionalInfo" rows="3" placeholder="Informations supplémentaires, remarques..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="eventPrice">Tarif</label>
-                    <input type="text" id="eventPrice" name="Tarif" placeholder="Ex: Gratuit, 5€, Entrée libre, de 10€ à 15€">
+                    <input type="text" id="eventPrice" name="eventPrice" placeholder="Ex: Gratuit, 5€, Entrée libre, de 10€ à 15€">
                 </div>
 
                 <div class="form-group">
                     <label for="eventAccessibility">Accessibilité (PMR) :</label>
-                    <textarea id="eventAccessibility" name="AccessibilitePMR" rows="3" placeholder="Informations sur l'accès pour les personnes à mobilité réduite."></textarea>
+                    <textarea id="eventAccessibility" name="eventAccessibility" rows="3" placeholder="Informations sur l'accès pour les personnes à mobilité réduite."></textarea>
                 </div>
 
                 <h2>Vos coordonnées (Ne seront pas affichées publiquement)</h2>
@@ -568,13 +605,13 @@
                 <div class="form-group">
                     <label for="submitterName">Nom <span class="required">*</span></label>
                     <small>Prénom & prénom ou bien nom du collectif. Cela n'apparaîtra pas en ligne.</small>
-                    <input type="text" id="submitterName" name="ViaNom" required>
+                    <input type="text" id="submitterName" name="submitterName" required>
                 </div>
 
                 <div class="form-group">
                     <label for="submitterEmail">Email <span class="required">*</span></label>
                     <small>Pour te prévenir de la validation de ton événement. Cela n'apparaîtra pas en ligne.</small>
-                    <input type="email" id="submitterEmail" name="ViaMail" required>
+                    <input type="email" id="submitterEmail" name="submitterEmail" required>
                 </div>
 
                 <button type="submit" id="submitButton" class="main-button">Envoyer l'événement</button>
@@ -611,6 +648,14 @@
             const eventAddressInput = document.getElementById('eventAddress');
             const eventCityInput = document.getElementById('eventCity');
 
+            // NOUVEAUX ÉLÉMENTS POUR LE VISUEL DE L'ÉVÉNEMENT
+            const photoOptionRadios = document.querySelectorAll('input[name="photoOption"]');
+            const uploadSection = document.getElementById('uploadSection');
+            const urlSection = document.getElementById('urlSection');
+            const eventPhotoFile = document.getElementById('eventPhotoFile');
+            const eventPhotoUrlText = document.getElementById('eventPhotoUrlText');
+
+
             let currentTimeout = null;
             let currentActiveItem = -1; // For keyboard navigation in autocomplete
 
@@ -626,6 +671,27 @@
                 document.getElementById(sectionId).classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of the new section
             };
+
+            // --- Gestion des options d'upload/URL ---
+            const togglePhotoOption = () => {
+                if (document.getElementById('optionUpload').checked) {
+                    uploadSection.style.display = 'block';
+                    urlSection.style.display = 'none';
+                    eventPhotoUrlText.removeAttribute('required'); // Remove required from hidden field
+                    eventPhotoFile.setAttribute('required', 'required'); // Add required to visible field
+                } else {
+                    uploadSection.style.display = 'none';
+                    urlSection.style.display = 'block';
+                    eventPhotoFile.removeAttribute('required'); // Remove required from hidden field
+                    eventPhotoUrlText.setAttribute('required', 'required'); // Add required to visible field
+                }
+                saveFormToLocalStorage(); // Save option choice
+            };
+
+            photoOptionRadios.forEach(radio => {
+                radio.addEventListener('change', togglePhotoOption);
+            });
+
 
             // --- Persistance des données (LocalStorage) ---
             const saveFormToLocalStorage = () => {
@@ -643,7 +709,11 @@
                         } else if (field.name) {
                              data[field.name] = field.checked;
                         }
-                    } else if (field.type !== 'submit' && field.name) {
+                    } else if (field.type === 'radio' && field.name === 'photoOption') {
+                        if (field.checked) {
+                            data[field.name] = field.value;
+                        }
+                    } else if (field.type !== 'submit' && field.name !== 'eventPhotoFile' && field.name) {
                         data[field.name] = field.value;
                     }
                 });
@@ -657,7 +727,7 @@
                     for (const key in data) {
                         const fields = form.querySelectorAll(`[name="${key}"]`);
                         if (fields.length > 0) {
-                            if (fields.length === 1 && fields[0].type !== 'checkbox') {
+                            if (fields.length === 1 && fields[0].type !== 'checkbox' && fields[0].type !== 'radio') {
                                 fields[0].value = data[key];
                             } else {
                                 fields.forEach(field => {
@@ -666,6 +736,10 @@
                                             field.checked = data[key].includes(field.value);
                                         } else {
                                             field.checked = data[key];
+                                        }
+                                    } else if (field.type === 'radio' && field.name === 'photoOption') {
+                                        if (field.value === data[key]) {
+                                            field.checked = true;
                                         }
                                     }
                                 });
@@ -681,6 +755,9 @@
                             }
                         }
                     }
+                    togglePhotoOption(); // Apply correct display based on loaded radio choice
+                } else {
+                    togglePhotoOption(); // Ensure default option is displayed on first load
                 }
             };
 
@@ -763,6 +840,19 @@
                 }
             });
 
+            const setActiveItem = (items) => {
+                items.forEach((item, index) => {
+                    if (index === currentActiveItem) {
+                        item.classList.add('autocomplete-active');
+                    } else {
+                        item.classList.remove('autocomplete-active');
+                    }
+                });
+                if (currentActiveItem > -1) {
+                    items[currentActiveItem].scrollIntoView({ block: 'nearest' });
+                }
+            };
+
             document.addEventListener('click', (e) => {
                 if (!addressAutocompleteInput.contains(e.target) && !autocompleteResultsDiv.contains(e.target)) {
                     autocompleteResultsDiv.innerHTML = '';
@@ -780,12 +870,13 @@
                     const errorMessage = formGroup.querySelector('.error-message');
                     if (errorMessage) errorMessage.remove();
 
-                    const inputs = formGroup.querySelectorAll('input:not([type="hidden"]), textarea');
+                    // Gérer les champs requis individuellement
+                    const inputs = formGroup.querySelectorAll('input:not([type="hidden"]):not([type="radio"]), textarea');
                     let groupHasError = false;
 
+                    // Validation spécifique pour les groupes de checkboxes
                     if (formGroup.querySelector('.checkbox-group')) {
                         const groupRequired = (formGroup.querySelector('label span.required') !== null);
-
                         if (groupRequired) {
                             let oneChecked = false;
                             const checkboxes = formGroup.querySelectorAll('input[type="checkbox"]');
@@ -805,10 +896,15 @@
                         }
                     }
 
+                    // Validation pour les inputs textuels et textarea
                     inputs.forEach(field => {
                         if (groupHasError) return;
 
-                        if (field.hasAttribute('required') && field.value.trim() === '') {
+                        // Skip validation for hidden photo inputs
+                        const isPhotoFileHidden = (field === eventPhotoFile && uploadSection.style.display === 'none');
+                        const isPhotoUrlHidden = (field === eventPhotoUrlText && urlSection.style.display === 'none');
+
+                        if (field.hasAttribute('required') && field.value.trim() === '' && !isPhotoFileHidden && !isPhotoUrlHidden) {
                             formGroup.classList.add('is-invalid');
                             let errMessage = document.createElement('div');
                             errMessage.classList.add('error-message');
@@ -816,7 +912,7 @@
                             formGroup.appendChild(errMessage);
                             groupHasError = true;
                             isValid = false;
-                        } else if (field.type === 'email' && !field.validity.valid) {
+                        } else if (field.type === 'email' && !field.validity.valid && !isPhotoFileHidden && !isPhotoUrlHidden) {
                             formGroup.classList.add('is-invalid');
                             let errMessage = document.createElement('div');
                             errMessage.classList.add('error-message');
@@ -824,6 +920,14 @@
                             formGroup.appendChild(errMessage);
                             groupHasError = true;
                             isValid = false;
+                        } else if (field.type === 'url' && field.value.trim() !== '' && !field.validity.valid) { // Validate URL format if not empty
+                             formGroup.classList.add('is-invalid');
+                             let errMessage = document.createElement('div');
+                             errMessage.classList.add('error-message');
+                             errMessage.textContent = 'Veuillez entrer une URL valide.';
+                             formGroup.appendChild(errMessage);
+                             groupHasError = true;
+                             isValid = false;
                         }
                     });
                 });
@@ -844,9 +948,18 @@
                                 if (errorMessage) errorMessage.remove();
                             }
                         }
-                    } else {
+                    } else if (field.type !== 'radio') { // Exclude radio buttons from general input validation
+                        const isPhotoFileHidden = (field === eventPhotoFile && uploadSection.style.display === 'none');
+                        const isPhotoUrlHidden = (field === eventPhotoUrlText && urlSection.style.display === 'none');
+
                         if (formGroup.classList.contains('is-invalid')) {
-                            if (field.checkValidity()) {
+                            // Only re-validate if not hidden photo field or if it's currently invalid but now valid
+                            if ((field.checkValidity() || field.value.trim() === '') && !isPhotoFileHidden && !isPhotoUrlHidden) {
+                                formGroup.classList.remove('is-invalid');
+                                const errorMessage = formGroup.querySelector('.error-message');
+                                if (errorMessage) errorMessage.remove();
+                            } else if (field.type === 'url' && field.value.trim() === '' && !field.hasAttribute('required')) {
+                                // Clear error for optional empty URL field
                                 formGroup.classList.remove('is-invalid');
                                 const errorMessage = formGroup.querySelector('.error-message');
                                 if (errorMessage) errorMessage.remove();
@@ -855,6 +968,7 @@
                     }
                 }
             });
+
 
             // --- Gestion de la soumission du Formulaire ---
             form.addEventListener('submit', async (e) => {
@@ -866,7 +980,7 @@
                 if (!validateForm()) {
                     statusMessage.textContent = 'Veuillez corriger les erreurs dans le formulaire.';
                     statusMessage.style.color = '#f56c6c';
-                    const firstInvalid = form.querySelector('.is-invalid input, .is-invalid textarea, .is-invalid .checkbox-group');
+                    const firstInvalid = form.querySelector('.is-invalid input, .is-invalid textarea, .is-invalid .checkbox-group, .is-invalid .photo-option-section');
                     if(firstInvalid) {
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
@@ -876,38 +990,51 @@
                 statusMessage.textContent = 'Envoi des données...';
                 statusMessage.style.color = '#8a2be2'; // Violet pour l'état d'envoi
 
-                const formData = new FormData(form);
-                const data = {};
-                formData.forEach((value, key) => {
-                    if (key.endsWith('[]')) {
-                        const cleanKey = key.slice(0, -2);
-                        if (!data[cleanKey]) {
-                            data[cleanKey] = [];
+                const formData = new FormData();
+                // Ajouter tous les champs de texte et les checkboxes au FormData
+                form.querySelectorAll('input:not([type="file"]):not([type="radio"]), textarea, select').forEach(field => {
+                    if (field.name.endsWith('[]')) { // Checkboxes multiples
+                        if (field.checked) {
+                            formData.append(field.name, field.value);
                         }
-                        data[cleanKey].push(value);
-                    } else {
-                        data[key] = value;
+                    } else { // Tous les autres champs sauf les radios et files
+                        formData.append(field.name, field.value);
                     }
                 });
 
-                data.Horodateur = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
+                // Gérer les options de photo
+                const selectedPhotoOption = document.querySelector('input[name="photoOption"]:checked').value;
+                if (selectedPhotoOption === 'upload') {
+                    if (eventPhotoFile.files.length > 0) {
+                        formData.append('eventPhotoFile', eventPhotoFile.files[0]);
+                    }
+                } else { // optionUrl
+                    if (eventPhotoUrlText.value.trim() !== '') {
+                        formData.append('eventPhotoUrlText', eventPhotoUrlText.value.trim());
+                    }
+                }
+                
+                // Ajouter l'horodateur
+                formData.append('Horodateur', new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }));
+                
+                // Récupérer le nom pour le message de confirmation
+                const submitterName = document.getElementById('submitterName').value || 'cher contributeur/chère contributrice';
 
                 try {
-                    const submitterName = data.ViaNom || 'cher contributeur/chère contributrice';
-
                     const response = await fetch(googleAppsScriptWebAppUrl, {
                         method: 'POST',
-                        mode: 'no-cors', // MAINTENIR 'no-cors' car setHeader ne fonctionne pas côté Apps Script
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data),
+                        body: formData, // FormData est envoyé directement, le navigateur gère le 'multipart/form-data' header
+                        // PAS DE 'Content-Type' ici quand on utilise FormData, le navigateur le définit correctement
                     });
 
-                    // Avec 'no-cors', nous ne pouvons PAS lire la réponse du serveur (response.json() échouerait).
-                    // Nous devons ASSUMER le succès si la requête fetch ne tombe pas en erreur réseau.
-                    // Le statut 'opaque' signifie que la requête a été envoyée mais que la réponse est inaccessible.
-                    if (response.type === 'opaque' || response.ok) { // response.ok ne sera vrai qu'en mode 'cors'
+                    // Google Apps Script en mode Web App avec doPost attend une réponse,
+                    // mais si le mode est 'no-cors' (souvent pour éviter les problèmes CORS complexes
+                    // qui peuvent être réglés côté Apps Script avec Content-Type et Access-Control-Allow-Origin),
+                    // le client ne peut pas lire la réponse. Si le script a été bien déployé
+                    // et qu'il gère les en-têtes CORS, alors response.ok sera vrai.
+                    // Vu qu'on a modifié Apps Script pour ne PAS envoyer de headers CORS,
+                    // on doit toujours assumer le succès si pas d'erreur réseau.
+                    if (response.type === 'opaque' || response.ok) { // response.ok sera vrai si votre script Apps Script renvoie des en-têtes CORS valides
                         statusMessage.textContent = 'Votre événement a été envoyé avec succès ! Merci !';
                         statusMessage.style.color = '#67c23a';
 
@@ -917,7 +1044,8 @@
                         eventCityInput.value = '';
                         form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
                         form.querySelectorAll('.error-message').forEach(el => el.remove());
-
+                        togglePhotoOption(); // Reset to default photo option display
+                        
                         confirmationNameSpan.textContent = submitterName;
                         showSection('confirmation-section');
                     } else {
@@ -944,6 +1072,8 @@
 
             // Au chargement initial, s'assurer que seule la section d'introduction est visible
             showSection('intro-section');
+            // Appel initial pour définir l'état des options photo
+            togglePhotoOption();
         });
     </script>
 </body>
